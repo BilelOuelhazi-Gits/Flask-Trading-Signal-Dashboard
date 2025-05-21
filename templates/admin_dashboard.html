@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f4f7fa;
+            color: #333;
+        }
+
+        .header {
+            background-color: #2c3e50;
+            padding: 15px 20px;
+            color: white;
+            text-align: center;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #34495e;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #1abc9c;
+        }
+
+        .main {
+            flex: 1;
+            padding: 20px;
+        }
+
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+
+        .alert {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+
+        .alert-success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+
+        .alert-error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        table th, table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        table th {
+            background-color: #2c3e50;
+            color: white;
+        }
+
+        form {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        form label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        form input, form select {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #1abc9c;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #16a085;
+        }
+
+        .action-button {
+            display: flex;
+            gap: 10px;
+        }
+
+        .delete-button {
+            background-color: #e74c3c;
+        }
+
+        .delete-button:hover {
+            background-color: #c0392b;
+        }
+
+        .submit-button {
+            background-color: #3498db;
+        }
+
+        .submit-button:hover {
+            background-color: #2980b9;
+        }
+
+        .take-profit-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .take-profit-input input {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Admin Dashboard</h1>
+    </div>
+    <div class="container">
+        <div class="sidebar">
+            <a href="#">Dashboard</a>
+            <a href="#">User Management</a>
+            <a href="#">Trading Signals</a>
+            <a href="#">Reports</a>
+            <a href="#">Settings</a>
+        </div>
+        <div class="main">
+            <h2>Welcome, {{ username }}!</h2>
+
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <h3>User Management</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Phone Number</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                        <tr>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.phone_number }}</td>
+                            <td>{{ user.role }}</td>
+                            <td class="action-button">
+                                <form action="{{ url_for('admin_delete_user', user_id=user._id) }}" method="post" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                    <button class="delete-button" type="submit">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <h3>Add New User</h3>
+            <form action="{{ url_for('admin_add_user') }}" method="post">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+
+                <label for="phone_number">Phone Number:</label>
+                <input type="text" id="phone_number" name="phone_number" required>
+
+                <label for="role">Role:</label>
+                <select id="role" name="role">
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                    <option value="super admin">Super Admin</option>
+                </select>
+
+                <button class="submit-button" type="submit">Add User</button>
+            </form>
+
+            <h3>Trading Signal Management</h3>
+
+            <h3>Add Trading Signal</h3>
+            <form id="add-signal-form" action="{{ url_for('admin_add_signal') }}" method="post">
+                <label for="asset">Asset:</label>
+                <select id="asset" name="asset" required>
+                    <option value="EUR/USD">EUR/USD</option>
+                    <option value="GBP/USD">GBP/USD</option>
+                    <option value="USD/JPY">USD/JPY</option>
+                    <option value="AUD/USD">AUD/USD</option>
+                    <option value="USD/CHF">USD/CHF</option>
+                    <option value="NZD/USD">NZD/USD</option>
+                    <option value="USD/CAD">USD/CAD</option>
+                    <option value="EUR/GBP">EUR/GBP</option>
+                    <option value="EUR/JPY">EUR/JPY</option>
+                    <option value="GBP/JPY">GBP/JPY</option>
+                    <option value="AUD/JPY">AUD/JPY</option>
+                    <option value="NZD/JPY">NZD/JPY</option>
+                    <option value="CAD/JPY">CAD/JPY</option>
+                    <option value="CHF/JPY">CHF/JPY</option>
+                    <option value="GBP/CHF">GBP/CHF</option>
+                    <option value="AUD/NZD">AUD/NZD</option>
+                </select>
+
+                <label for="type">Type:</label>
+                <select id="type" name="type" required>
+                    <option value="Buy">Buy</option>
+                    <option value="Sell">Sell</option>
+                </select>
+
+                <label for="entry_price">Entry Price:</label>
+                <input type="number" step="0.0001" id="entry_price" name="entry_price" required>
+
+                <label for="stop_loss">Stop Loss:</label>
+                <input type="number" step="0.0001" id="stop_loss" name="stop_loss" required>
+
+                <label for="take_profit">Take Profit:</label>
+                <input type="number" step="0.0001" id="take_profit" name="take_profit" required>
+                <button type="button" onclick="addTakeProfit()">Add Another Take Profit</button>
+                <div id="take-profit-container"></div> <!-- Container for take profits -->
+
+                <label for="risk_level">Risk Level:</label>
+                <select id="risk_level" name="risk_level" required>
+                    <option value="LOW">LOW</option>
+                    <option value="MEDIUM">MEDIUM</option>
+                    <option value="HIGH">HIGH</option>
+                </select>
+
+                <button class="submit-button" type="submit">Submit</button>
+            </form>
+
+            <h3>Trading Signals List</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Asset</th>
+                        <th>Type</th>
+                        <th>Entry Price</th>
+                        <th>Stop Loss</th>
+                        <th>Take Profit</th>
+                        <th>Risk Level</th>
+                        <th>Win/Loss</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for signal in signals %}
+                        <tr>
+                            <td>{{ signal.asset }}</td>
+                            <td>{{ signal.type }}</td>
+                            <td>{{ signal.entry_price }}</td>
+                            <td>{{ signal.stop_loss }}</td>
+                            <td>
+                                {% for tp in signal.take_profit %}
+                                    {{ tp }}<br>
+                                {% endfor %}
+                            </td>
+                            <td>{{ signal.risk_level }}</td>
+                            <td>
+                                <form action="{{ url_for('admin_update_win_status', signal_id=signal._id) }}" method="post">
+                                    <label for="win_status">Win Status:</label>
+                                    <select id="win_status" name="win_status">
+                                        <option value="true">Won</option>
+                                        <option value="false">Lost</option>
+                                    </select>
+
+                                    <label for="take_profit_level">Select Take Profit Level:</label>
+                                    <select id="take_profit_level" name="take_profit_level">
+                                        {% for idx in range(signal.take_profit|length) %}
+                                            <option value="{{ idx }}">{{ signal.take_profit[idx] }}</option>
+                                        {% endfor %}
+                                    </select>
+
+                                    <button class="submit-button" type="submit">Update Win Status</button>
+                                </form>
+                            </td>
+                            <td class="action-button">
+                                <form action="{{ url_for('admin_delete_signal', signal_id=signal._id) }}" method="post" onsubmit="return confirm('Are you sure you want to delete this signal?');">
+                                    <button class="delete-button" type="submit">Delete Signal</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+    <!-- JavaScript for adding multiple take profits -->
+    <script>
+        function addTakeProfit() {
+            var takeProfitContainer = document.getElementById('take-profit-container');
+            var newTakeProfitInput = document.createElement('input');
+            newTakeProfitInput.type = 'number';
+            newTakeProfitInput.step = '0.0001';
+            newTakeProfitInput.name = 'take_profit';
+            newTakeProfitInput.required = true;
+            newTakeProfitInput.placeholder = 'Take Profit Value';
+            var takeProfitWrapper = document.createElement('div');
+            takeProfitWrapper.className = 'take-profit-input';
+            takeProfitWrapper.appendChild(newTakeProfitInput);
+            takeProfitContainer.appendChild(takeProfitWrapper);
+        }
+    </script>
+</body>
+</html>
